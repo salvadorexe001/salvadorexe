@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TruckMods – ETS2 Mod Merkezi</title>
+<style>
+:root{--bg:#f4f5f8;--card:#fff;--text:#14161c;--mute:#6b7280;--line:#e5e7eb;--acc:#ff7a1a;--acc2:#ff3d54;--shadow:0 8px 30px rgba(20,22,28,.08);color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0d0f14;--card:#171a22;--text:#eef0f5;--mute:#9aa3b2;--line:#262a35;--shadow:0 8px 30px rgba(0,0,0,.4);color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+.wrap{max-width:1150px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;height:64px}
+.logo{font-weight:800;font-size:1.25rem;letter-spacing:-.5px}
+.grad{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.btn{border:0;cursor:pointer;font:inherit;font-weight:600;padding:8px 16px;border-radius:11px;color:#fff;background:linear-gradient(135deg,var(--acc),var(--acc2));transition:transform .15s,box-shadow .15s;text-decoration:none;display:inline-block;font-size:.9rem}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(255,90,40,.35)}
+.hero{padding:64px 0 36px;text-align:center}
+.hero h1{font-size:clamp(2rem,6vw,3.6rem);margin:0 0 12px;letter-spacing:-1.5px;line-height:1.1}
+.hero p{color:var(--mute);max-width:560px;margin:0 auto 26px}
+.search{display:flex;max-width:520px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.search input{flex:1;border:0;background:none;color:var(--text);padding:14px 18px;font:inherit;outline:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:22px 0 30px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--text);padding:7px 16px;border-radius:99px;cursor:pointer;font:inherit;font-size:.9rem}
+.chip.on{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border-color:transparent}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;padding-bottom:60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);transition:transform .2s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-5px)}
+.cover{height:150px;background-size:cover;background-position:center;position:relative}
+.tag{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;font-size:.75rem;padding:3px 10px;border-radius:99px;backdrop-filter:blur(6px)}
+.body{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.body h3{margin:0;font-size:1.05rem}
+.body p{margin:0;color:var(--mute);font-size:.9rem;flex:1}
+.meta{display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-size:.8rem}
+.empty{grid-column:1/-1;text-align:center;color:var(--mute);padding:50px 0}
+footer{border-top:1px solid var(--line);color:var(--mute);text-align:center;padding:24px;font-size:.85rem}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><div class="logo">🚚 Truck<span class="grad">Mods</span></div></div></header>
+<main class="wrap">
+  <section class="hero">
+    <h1>Euro Truck Simulator 2 için <span class="grad">en iyi modlar</span></h1>
+    <p>Kamyon, römork, harita ve daha fazlası. Tek tıkla indir, yola çık.</p>
+    <div class="search"><input id="q" placeholder="Mod ara…"></div>
+    <div class="chips" id="chips"></div>
+  </section>
+  <section class="grid" id="grid"><div class="empty">Yükleniyor…</div></section>
+</main>
+<footer>© <span id="yr"></span> TruckMods · Bu site resmi SCS Software sitesi değildir.</footer>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const grads=["#ff7a1a,#ff3d54","#3b82f6,#8b5cf6","#10b981,#06b6d4","#f59e0b,#ef4444","#ec4899,#8b5cf6"];
+let mods=[],cat="Hepsi";
+$("yr").textContent=new Date().getFullYear();
+function render(){
+  const q=$("q").value.toLowerCase();
+  const cats=["Hepsi",...new Set(mods.map(m=>m.cat))];
+  $("chips").innerHTML=cats.map(c=>`<button class="chip ${c===cat?"on":""}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+  const list=mods.filter(m=>(cat==="Hepsi"||m.cat===cat)&&((m.title||"")+(m.desc||"")).toLowerCase().includes(q));
+  $("grid").innerHTML=list.length?list.map((m,i)=>{
+    const bg=m.img?`url('${esc(m.img)}')`:`linear-gradient(135deg,${grads[i%grads.length]})`;
+    const ok=/^https?:\/\//.test(m.link);
+    return `<article class="card"><div class="cover" style="background-image:${bg}"><span class="tag">${esc(m.cat)}</span></div>
+    <div class="body"><h3>${esc(m.title)}</h3><p>${esc(m.desc)}</p>
+    <div class="meta"><span>ETS2 ${esc(m.ver)}</span><a class="btn" href="${ok?esc(m.link):"#"}" target="_blank" rel="noopener">⬇ İndir</a></div></div></article>`}).join("")
+    :`<div class="empty">Henüz mod yok.</div>`;
+}
+$("q").oninput=render;
+$("chips").onclick=e=>{if(e.target.dataset.c){cat=e.target.dataset.c;render()}};
+fetch("mods.json?t="+Date.now()).then(r=>r.json()).then(d=>{mods=(Array.isArray(d)?d:[]).sort((a,b)=>(b.ts||0)-(a.ts||0));render()})
+ .catch(()=>{$("grid").innerHTML='<div class="empty">Modlar yüklenemedi. (Siteyi Live Server veya hosting üzerinden aç, çift tıklayarak değil.)</div>'});
+</script>
+</body>
+</html>
